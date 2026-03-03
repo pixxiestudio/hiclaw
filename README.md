@@ -2,125 +2,124 @@
 
 [English](./README.md) | [中文](./README.zh-CN.md)
 
-**Open-source Agent Teams system with IM-based multi-Agent collaboration and human-in-the-loop oversight.**
+<p align="center">
+  <a href="https://deepwiki.com/higress-group/hiclaw"><img src="https://img.shields.io/badge/DeepWiki-Ask_AI-navy.svg?logo=data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACwAAAAyCAYAAAAnWDnqAAAAAXNSR0IArs4c6QAAA05JREFUaEPtmUtyEzEQhtWTQyQLHNak2AB7ZnyXZMEjXMGeK/AIi+QuHrMnbChYY7MIh8g01fJoopFb0uhhEqqcbWTp06/uv1saEDv4O3n3dV60RfP947Mm9/SQc0ICFQgzfc4CYZoTPAswgSJCCUJUnAAoRHOAUOcATwbmVLWdGoH//PB8mnKqScAhsD0kYP3j/Yt5LPQe2KvcXmGvRHcDnpxfL2zOYJ1mFwrryWTz0advv1Ut4CJgf5uhDuDj5eUcAUoahrdY/56ebRWeraTjMt/00Sh3UDtjgHtQNHwcRGOC98BJEAEymycmYcWwOprTgcB6VZ5JK5TAJ+fXGLBm3FDAmn6oPPjR4rKCAoJCal2eAiQp2x0vxTPB3ALO2CRkwmDy5WohzBDwSEFKRwPbknEggCPB/imwrycgxX2NzoMCHhPkDwqYMr9tRcP5qNrMZHkVnOjRMWwLCcr8ohBVb1OMjxLwGCvjTikrsBOiA6fNyCrm8V1rP93iVPpwaE+gO0SsWmPiXB+jikdf6SizrT5qKasx5j8ABbHpFTx+vFXp9EnYQmLx02h1QTTrl6eDqxLnGjporxl3NL3agEvXdT0WmEost648sQOYAeJS9Q7bfUVoMGnjo4AZdUMQku50McDcMWcBPvr0SzbTAFDfvJqwLzgxwATnCgnp4wDl6Aa+Ax283gghmj+vj7feE2KBBRMW3FzOpLOADl0Isb5587h/U4gGvkt5v60Z1VLG8BhYjbzRwyQZemwAd6cCR5/XFWLYZRIMpX39AR0tjaGGiGzLVyhse5C9RKC6ai42ppWPKiBagOvaYk8lO7DajerabOZP46Lby5wKjw1HCRx7p9sVMOWGzb/vA1hwiWc6jm3MvQDTogQkiqIhJV0nBQBTU+3okKCFDy9WwferkHjtxib7t3xIUQtHxnIwtx4mpg26/HfwVNVDb4oI9RHmx5WGelRVlrtiw43zboCLaxv46AZeB3IlTkwouebTr1y2NjSpHz68WNFjHvupy3q8TFn3Hos2IAk4Ju5dCo8B3wP7VPr/FGaKiG+T+v+TQqIrOqMTL1VdWV1DdmcbO8KXBz6esmYWYKPwDL5b5FA1a0hwapHiom0r/cKaoqr+27/XcrS5UwSMbQAAAABJRU5ErkJggg==" alt="DeepWiki"></a>
+  <a href="https://discord.gg/n6mV8xEYUF"><img src="https://img.shields.io/badge/Discord-Join_Us-blueviolet.svg?logo=discord" alt="Discord"></a>
+  <a href="https://qr.dingtalk.com/action/joingroup?code=v1,k1,0etR5l8fxeb/6/mzE5hRE1uy4tkiwxvPV9+TdBv7sEM=&_dt_no_comment=1&origin=11"><img src="https://img.shields.io/badge/DingTalk-Join_Us-orange.svg" alt="DingTalk"></a>
+</p>
 
-HiClaw lets you deploy a team of AI Agents that communicate via instant messaging (Matrix protocol), coordinate tasks through a centralized file system, and are fully observable and controllable by human administrators.
+**Deploy a team of AI Agents in 5 minutes. Manager coordinates Workers, all visible in your IM.**
 
-## Key Features
+HiClaw is an open-source Agent Teams system built on [OpenClaw](https://github.com/nicepkg/openclaw). A Manager Agent acts as your AI chief of staff — it creates Workers, assigns tasks, monitors progress, and reports back. You stay in control, making decisions instead of babysitting agents.
 
-- **Agent Teams**: Manager Agent coordinates multiple Worker Agents to complete complex tasks
-- **Human in the Loop**: All Agent communication happens in Matrix Rooms where humans can observe and intervene at any time
-- **Multi-Channel Admin**: Admin can contact the Manager from Discord, Feishu, Telegram, and other OpenClaw-supported channels; the Manager recognizes them as the admin and can route daily notifications to their preferred (primary) channel
-- **Coding CLI Delegation**: When a coding CLI tool (Claude Code, Gemini CLI) is available, Workers can delegate coding tasks to it — the Manager runs the CLI in the task workspace and streams results back, enabling richer code generation beyond the standard LLM call
-- **AI Gateway**: Unified LLM and MCP Server access through Higress, with per-Worker credential management
-- **Stateless Workers**: Workers load all config from centralized storage -- destroy and recreate freely
-- **MCP Integration**: External tools (GitHub, etc.) accessed via MCP Servers with centralized credential management
-- **Open Source**: Built on Higress, Tuwunel, MinIO, OpenClaw, and Element Web
+```
+You → Manager → Worker Alice (frontend)
+             → Worker Bob   (backend)
+             → Worker ...
+```
+
+All communication happens in Matrix Rooms. You see everything, and can intervene anytime — just like messaging a team in a group chat.
+
+## Why HiClaw
+
+**Security by design**: Workers never hold real API keys or GitHub PATs. They only carry a consumer token (like a badge). Even a compromised Worker can't leak your credentials.
+
+**Truly open IM**: Built-in Matrix server means no Slack/Feishu bot approval process. Open Element Web in your browser, or use any Matrix client (Element, FluffyChat) on mobile — iOS, Android, Web.
+
+**One command to start**: A single `curl | bash` sets everything up — Higress AI Gateway, Matrix server, file storage, web client, and the Manager Agent itself.
+
+**Skills ecosystem**: Workers can pull from [skills.sh](https://skills.sh) (80,000+ community skills) on demand. Safe to use because Workers can't access real credentials anyway.
 
 ## Quick Start
 
-See **[docs/quickstart.md](docs/quickstart.md)** for a step-by-step guide from zero to a working Agent team.
-
-### Prerequisites
-
-- **Docker Desktop** (Windows/macOS) or **Docker Engine** (Linux) installed and running
-- **PowerShell 7+** (Windows only)
-- An LLM API key (e.g., Qwen, OpenAI)
-- (Optional) A GitHub Personal Access Token for GitHub collaboration features
-
-### Installation
-
-#### macOS / Linux
-
 ```bash
-# Quick install (interactive)
-bash <(curl -fsSL https://higress.ai/hiclaw/install.sh)
-
-# Or clone and install
-git clone https://github.com/higress-group/hiclaw.git && cd hiclaw
-HICLAW_LLM_API_KEY="sk-xxx" make install
+bash <(curl -sSL https://higress.ai/hiclaw/install.sh)
 ```
 
-#### Windows (PowerShell 7+)
+That's it. The script asks for your LLM API key, then sets everything up. When it's done:
+
+```
+=== HiClaw Manager Started! ===
+  Open: http://127.0.0.1:18088
+  Login: admin / [generated password]
+  Tell the Manager: "Create a Worker named alice for frontend dev"
+```
+
+**Windows (PowerShell 7+):**
 
 ```powershell
 Set-ExecutionPolicy Bypass -Scope Process -Force; Invoke-Expression ((New-Object System.Net.WebClient).DownloadString('https://higress.ai/hiclaw/install.ps1'))
 ```
 
-The installation script will:
-1. **Detect your timezone** for optimal registry selection
-2. **Prompt for configuration** (LLM provider, API key, ports, etc.) - all can be pre-set via environment variables
-3. **Wait for Manager to be ready** before exiting
-4. **Send a welcome message** to the Manager, which will greet you in your likely local language
+**Prerequisites**: Docker Desktop (Windows/macOS) or Docker Engine (Linux). That's all.
 
-#### Installation Options
-
-**macOS / Linux:**
+### Non-interactive install
 
 ```bash
-# Non-interactive mode (use all defaults)
-HICLAW_NON_INTERACTIVE=1 HICLAW_LLM_API_KEY="sk-xxx" make install
-
-# Custom ports
-HICLAW_PORT_GATEWAY=8080 HICLAW_PORT_CONSOLE=8001 HICLAW_LLM_API_KEY="sk-xxx" make install
-
-# External data directory
-HICLAW_DATA_DIR=~/hiclaw-data HICLAW_LLM_API_KEY="sk-xxx" make install
-
-# Pre-configure all settings
-HICLAW_LLM_PROVIDER=qwen \
-HICLAW_DEFAULT_MODEL=qwen3.5-plus \
-HICLAW_LLM_API_KEY="sk-xxx" \
-HICLAW_ADMIN_USER=admin \
-HICLAW_ADMIN_PASSWORD=yourpassword \
-HICLAW_TIMEZONE=Asia/Shanghai \
-make install
+HICLAW_LLM_API_KEY="sk-xxx" HICLAW_NON_INTERACTIVE=1 bash <(curl -sSL https://higress.ai/hiclaw/install.sh)
 ```
 
-**Windows (PowerShell):**
+### After install
 
-```powershell
-# Non-interactive mode (use all defaults)
-$env:HICLAW_NON_INTERACTIVE = "1"
-$env:HICLAW_LLM_API_KEY = "sk-xxx"
-.\hiclaw-install.ps1
+1. Open `http://127.0.0.1:18088` in your browser
+2. Login with the credentials shown during install
+3. Tell the Manager to create a Worker and assign it a task
 
-# Pre-configure all settings
-$env:HICLAW_LLM_PROVIDER = "qwen"
-$env:HICLAW_DEFAULT_MODEL = "qwen3.5-plus"
-$env:HICLAW_LLM_API_KEY = "sk-xxx"
-$env:HICLAW_ADMIN_USER = "admin"
-$env:HICLAW_ADMIN_PASSWORD = "yourpassword"
-.\hiclaw-install.ps1
-```
+For mobile: download Element or FluffyChat, connect to your Matrix server address, and manage your agents from your phone.
 
-#### Upgrade or Reinstall
+## How It Works
 
-When running the install script on an existing installation, you'll be prompted:
+### Manager as your AI chief of staff
+
+The Manager handles the full Worker lifecycle through natural language:
 
 ```
-Choose an action:
-  1) In-place upgrade (keep data, workspace, env file)
-  2) Clean reinstall (remove all data, start fresh)
-  3) Cancel
+You: Create a Worker named alice for frontend development
+
+Manager: Done. Worker alice is ready.
+         Room: Worker: Alice
+         Tell alice what to build.
+
+You: @alice implement a login page with React
+
+Alice: On it... [a few minutes later]
+       Done. PR submitted: https://github.com/xxx/pull/1
 ```
 
-- **In-place upgrade**: Keeps all data, just recreates the Manager container. Optionally rebuild Worker containers if the image has changed.
-- **Clean reinstall**: Removes everything (Docker volume, workspace directory, env file, Worker containers). Requires manual confirmation of the workspace path.
+The Manager also runs periodic heartbeats — if a Worker gets stuck, it alerts you automatically.
 
-### Post-Installation
+### Security model
 
-After installation completes:
-
-1. Open Element Web: `http://matrix-client-local.hiclaw.io:<port>` (default port: 18080)
-2. Login with your admin credentials
-3. The Manager will greet you and introduce its capabilities
-
-Or send tasks via CLI:
-
-```bash
-make replay TASK="Create a Worker named alice for frontend development. Create it directly."
 ```
+Worker (consumer token only)
+    → Higress AI Gateway (holds real API keys, GitHub PAT)
+        → LLM API / GitHub API / MCP Servers
+```
+
+Workers only see their consumer token. The gateway handles all real credentials. Manager knows what Workers are doing, but never touches the actual keys either.
+
+### Human in the loop
+
+Every Matrix Room has you, the Manager, and the relevant Workers. You can jump in at any point:
+
+```
+You: @bob wait, change the password rule to minimum 8 chars
+Bob: Got it, updated.
+Alice: Frontend validation updated too.
+```
+
+No black boxes. No hidden agent-to-agent calls.
+
+## HiClaw vs OpenClaw Native
+
+| | OpenClaw Native | HiClaw |
+|---|---|---|
+| Deployment | Single process | Distributed containers |
+| Agent creation | Manual config + restart | Conversational |
+| Credentials | Each agent holds real keys | Workers only hold consumer tokens |
+| Human visibility | Optional | Built-in (Matrix Rooms) |
+| Mobile access | Depends on channel setup | Any Matrix client, zero config |
+| Monitoring | None | Manager heartbeat, visible in Room |
 
 ## Architecture
 
@@ -137,133 +136,47 @@ make replay TASK="Create a Worker named alice for frontend development. Create i
 └─────────────────────────┘  └────────────────┘
 ```
 
-## Multi-Agent Architecture: HiClaw vs OpenClaw Native
-
-HiClaw is built on [OpenClaw](https://github.com/nicepkg/openclaw) and extends it from a single-process multi-agent framework into a fully managed Agent Teams platform. The Manager Agent leverages the Higress AI Gateway to automate the entire multi-agent lifecycle -- from Worker creation and credential provisioning to task dispatch, progress monitoring, and skill evolution -- all through natural language conversation.
-
-### 1. Deployment & Topology
-
-| | OpenClaw Native | HiClaw |
-|---|---|---|
-| **Deployment** | Single process, all agents in one Gateway | Distributed containers, one per agent, cross-machine |
-| **Topology** | Flat peers, channel-based routing | Hierarchical Manager + Workers |
-| **Scaling & isolation** | Vertical; shared process, one crash affects all | Horizontal; container-level fault isolation |
-
-### 2. Communication & Human Visibility
-
-| | OpenClaw Native | HiClaw |
-|---|---|---|
-| **Channel** | Internal message bus | Matrix Rooms (IM protocol) |
-| **Human visibility** | Optional | **Built-in** -- human is in every Room |
-| **Agent-to-agent** | Opaque internal routing | All exchanges visible, searchable, interruptible |
-
-Every Room contains Human + Manager + Worker. The human can intervene at any time -- guiding a Worker to improve task execution (feeding back into skill optimization), or coaching the Manager on better Worker management strategies (refining its management skills).
-
-### 3. LLM & MCP Credential Management
-
-| | OpenClaw Native | HiClaw |
-|---|---|---|
-| **LLM access** | Each agent holds its own API key | Unified AI Gateway with per-agent consumer tokens |
-| **Tool credentials** | Each agent holds real credentials | Centralized at gateway -- agents never see real credentials |
-| **Permission control** | Per-agent config | Manager grants/revokes MCP Server access per Worker |
-| **Credential update** | Manual edit + restart | Manager updates config in MinIO, Worker hot-reloads automatically |
-
-Workers only hold their own consumer tokens. Even a compromised Worker cannot access upstream API credentials.
-
-### 4. Lifecycle & Skill Evolution Automation
-
-| | OpenClaw Native | HiClaw |
-|---|---|---|
-| **Agent creation** | Manual config + restart | Conversational: _"Create a Worker named alice for frontend dev"_ |
-| **Monitoring** | No cross-agent monitoring | Manager heartbeat in Rooms (human-visible) |
-| **Config updates** | Edit files + restart | Hot-reload, seconds to take effect |
-| **Self-improvement** | None | Manager reviews performance, evolves team skills |
-
-The Manager handles the full Worker lifecycle autonomously: account registration, SOUL.md generation, credential provisioning, skill assignment, task dispatch, and heartbeat monitoring. Two built-in extension mechanisms drive continuous improvement:
-
-- **Worker Experience Management**: per-Worker performance profiles with skill-level scoring, used for intelligent task assignment.
-- **Skill Evolution Management**: pattern recognition across tasks, new skill drafting, human review, and simulated task validation.
+| Component | Role |
+|-----------|------|
+| Higress AI Gateway | LLM proxy, MCP Server hosting, credential management |
+| Tuwunel (Matrix) | IM server for all Agent + Human communication |
+| Element Web | Browser client, zero setup |
+| MinIO | Centralized file storage, Workers are stateless |
+| OpenClaw | Agent runtime with Matrix plugin and skills |
 
 ## Documentation
 
-| Document | Description |
-|----------|-------------|
-| [docs/quickstart.md](docs/quickstart.md) | End-to-end quickstart guide with verification checkpoints |
-| [docs/architecture.md](docs/architecture.md) | System architecture and component overview |
-| [docs/manager-guide.md](docs/manager-guide.md) | Manager setup and configuration |
+| | |
+|---|---|
+| [docs/quickstart.md](docs/quickstart.md) | Step-by-step guide with verification checkpoints |
+| [docs/architecture.md](docs/architecture.md) | System architecture deep dive |
+| [docs/manager-guide.md](docs/manager-guide.md) | Manager configuration |
 | [docs/worker-guide.md](docs/worker-guide.md) | Worker deployment and troubleshooting |
-| [docs/development.md](docs/development.md) | Contributing guide and local development |
+| [docs/development.md](docs/development.md) | Contributing and local dev |
 
 ## Build & Test
 
 ```bash
-# Build all images
-make build
-
-# Build + run all integration tests (10 test cases, YOLO mode auto-enabled)
-make test
-
-# Run specific tests only
-make test TEST_FILTER="01 02 03"
-
-# Run tests without rebuilding images
-make test SKIP_BUILD=1
-
-# Quick smoke test (test-01 only)
-make test-quick
+make build          # Build all images
+make test           # Build + run all integration tests
+make test SKIP_BUILD=1  # Run tests without rebuilding
+make test-quick     # Smoke test only (test-01)
 ```
 
-## Install / Uninstall / Replay
+## Other Commands
 
 ```bash
-# Install Manager locally (builds images + interactive setup)
-HICLAW_LLM_API_KEY="sk-xxx" make install
-
-# Install without rebuilding images
-HICLAW_LLM_API_KEY="sk-xxx" SKIP_BUILD=1 make install
-
 # Send a task to Manager via CLI
 make replay TASK="Create a Worker named alice for frontend development"
 
-# View latest replay conversation log
-make replay-log
-
-# Run tests against installed Manager (no rebuild, no new container)
-make test-installed
-
-# Uninstall everything (Manager + Workers + volume + env file)
+# Uninstall everything
 make uninstall
-```
 
-## Push & Release
-
-```bash
-# Push multi-arch images (amd64 + arm64) to registry
+# Push multi-arch images
 make push VERSION=0.1.0 REGISTRY=ghcr.io REPO=higress-group/hiclaw
 
-# Clean up containers and images
-make clean
-
-# Show all targets
-make help
+make help  # All available targets
 ```
-
-## Project Structure
-
-```
-hiclaw/
-├── manager/           # Manager Agent container (all-in-one: Higress + Tuwunel + MinIO + Element Web + OpenClaw)
-├── worker/            # Worker Agent container (lightweight: OpenClaw + mc + mcporter)
-├── install/           # One-click installation scripts
-├── scripts/           # Utility scripts (replay-task.sh)
-├── hack/              # Maintenance scripts (mirror-images.sh)
-├── tests/             # Automated integration tests (10 test cases)
-├── .github/workflows/ # CI/CD pipelines
-├── docs/              # User documentation
-└── design/            # Internal design documents
-```
-
-See [AGENTS.md](AGENTS.md) for a detailed codebase navigation guide.
 
 ## License
 
