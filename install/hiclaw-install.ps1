@@ -260,7 +260,7 @@ $script:Messages = @{
     "port.local_only.title" = @{ zh = "--- 网络访问模式 ---"; en = "--- Network Access Mode ---" }
     "port.local_only.hint_yes" = @{ zh = "  仅本机使用，无需开放外部端口（推荐）"; en = "  Local use only, no external port exposure (recommended)" }
     "port.local_only.hint_no" = @{ zh = "  允许外部访问（局域网 / 公网）"; en = "  Allow external access (LAN / public network)" }
-    "port.local_only.choice" = @{ zh = "请选择 [Y/n]"; en = "Enter choice [Y/n]" }
+    "port.local_only.choice" = @{ zh = "请选择 [1/2]"; en = "Enter choice [1/2]" }
     "port.local_only.selected_local" = @{ zh = "端口已绑定到 127.0.0.1（仅本机访问）"; en = "Ports bound to 127.0.0.1 (localhost only)" }
     "port.local_only.selected_external" = @{ zh = "端口已绑定到所有网络接口（0.0.0.0）"; en = "Ports bound to all interfaces (0.0.0.0)" }
     "port.local_only.https_hint" = @{ zh = "⚠️  建议在 Higress 控制台配置 TLS 证书并启用 HTTPS，避免明文传输。"; en = "⚠️  It is recommended to configure TLS certificates and enable HTTPS in the Higress Console to avoid plaintext transmission." }
@@ -618,8 +618,8 @@ function Read-Prompt {
         return $envValue
     }
 
-    # Non-interactive mode
-    if ($script:HICLAW_NON_INTERACTIVE) {
+    # Non-interactive or quickstart mode
+    if ($script:HICLAW_NON_INTERACTIVE -or $script:HICLAW_QUICKSTART) {
         if ($Default) {
             Write-Log (Get-Msg "prompt.default" -f $VarName, $Default)
             return $Default
@@ -1298,12 +1298,12 @@ function Install-Manager {
     Write-Host "  1) $(Get-Msg 'port.local_only.hint_yes')"
     Write-Host "  2) $(Get-Msg 'port.local_only.hint_no')"
     Write-Host ""
-    if ($script:HICLAW_NON_INTERACTIVE -eq "1") {
+    if ($script:HICLAW_NON_INTERACTIVE -eq "1" -or $script:HICLAW_QUICKSTART) {
         $localOnly = if ($env:HICLAW_LOCAL_ONLY) { $env:HICLAW_LOCAL_ONLY } else { "1" }
     } elseif ($null -ne $env:HICLAW_LOCAL_ONLY) {
         $localOnly = $env:HICLAW_LOCAL_ONLY
     } else {
-        $localChoice = Read-Host "$(Get-Msg 'port.local_only.choice') [1]"
+        $localChoice = Read-Host "$(Get-Msg 'port.local_only.choice')"
         if (-not $localChoice) { $localChoice = "1" }
         $localOnly = if ($localChoice -match '^(2|n|N|no|NO)$') { "0" } else { "1" }
     }
@@ -1349,7 +1349,7 @@ function Install-Manager {
 
     # Data Persistence
     Write-Log (Get-Msg "data.title")
-    if (-not $script:HICLAW_NON_INTERACTIVE -and -not $env:HICLAW_DATA_DIR) {
+    if (-not $script:HICLAW_NON_INTERACTIVE -and -not $script:HICLAW_QUICKSTART -and -not $env:HICLAW_DATA_DIR) {
         $dataDirInput = Read-Host (Get-Msg "data.volume_prompt")
         $config.DATA_DIR = if ($dataDirInput) { $dataDirInput } else { "hiclaw-data" }
     }
@@ -1365,7 +1365,7 @@ function Install-Manager {
     Write-Log (Get-Msg "workspace.title")
     $defaultWorkspace = "$env:USERPROFILE\hiclaw-manager"
 
-    if (-not $script:HICLAW_NON_INTERACTIVE -and -not $env:HICLAW_WORKSPACE_DIR) {
+    if (-not $script:HICLAW_NON_INTERACTIVE -and -not $script:HICLAW_QUICKSTART -and -not $env:HICLAW_WORKSPACE_DIR) {
         $wsInput = Read-Host (Get-Msg "workspace.dir_prompt" -f $defaultWorkspace)
         $config.WORKSPACE_DIR = if ($wsInput) { $wsInput } else { $defaultWorkspace }
     }
@@ -1397,7 +1397,7 @@ function Install-Manager {
     $config.WORKER_IMAGE = $script:WORKER_IMAGE
 
     # Host share directory
-    if (-not $script:HICLAW_NON_INTERACTIVE -and -not $env:HICLAW_HOST_SHARE_DIR) {
+    if (-not $script:HICLAW_NON_INTERACTIVE -and -not $script:HICLAW_QUICKSTART -and -not $env:HICLAW_HOST_SHARE_DIR) {
         $shareInput = Read-Host (Get-Msg "host_share.prompt" -f $env:USERPROFILE)
         $config.HOST_SHARE_DIR = if ($shareInput) { $shareInput } else { $env:USERPROFILE }
     }

@@ -315,8 +315,8 @@ msg() {
         "port.local_only.hint_yes.en") text="  Local use only, no external port exposure (recommended)" ;;
         "port.local_only.hint_no.zh") text="  允许外部访问（局域网 / 公网）" ;;
         "port.local_only.hint_no.en") text="  Allow external access (LAN / public network)" ;;
-        "port.local_only.choice.zh") text="请选择 [Y/n]" ;;
-        "port.local_only.choice.en") text="Enter choice [Y/n]" ;;
+        "port.local_only.choice.zh") text="请选择 [1/2]" ;;
+        "port.local_only.choice.en") text="Enter choice [1/2]" ;;
         "port.local_only.selected_local.zh") text="端口已绑定到 127.0.0.1（仅本机访问）" ;;
         "port.local_only.selected_local.en") text="Ports bound to 127.0.0.1 (localhost only)" ;;
         "port.local_only.selected_external.zh") text="端口已绑定到所有网络接口（0.0.0.0）" ;;
@@ -848,8 +848,8 @@ prompt() {
         return
     fi
 
-    # Non-interactive: use default or error
-    if [ "${HICLAW_NON_INTERACTIVE}" = "1" ]; then
+    # Non-interactive or quickstart: use default or error
+    if [ "${HICLAW_NON_INTERACTIVE}" = "1" ] || [ "${HICLAW_QUICKSTART}" = "1" ]; then
         if [ -n "${default_value}" ]; then
             eval "export ${var_name}='${default_value}'"
             log "$(msg prompt.default "${var_name}" "${default_value}")"
@@ -894,8 +894,8 @@ prompt_optional() {
         return
     fi
 
-    # Non-interactive: skip, leave unset
-    if [ "${HICLAW_NON_INTERACTIVE}" = "1" ]; then
+    # Non-interactive or quickstart: skip, leave unset
+    if [ "${HICLAW_NON_INTERACTIVE}" = "1" ] || [ "${HICLAW_QUICKSTART}" = "1" ]; then
         eval "export ${var_name}=''"
         return
     fi
@@ -1313,7 +1313,7 @@ install_manager() {
     if [ "${HICLAW_NON_INTERACTIVE}" = "1" ]; then
         HICLAW_LOCAL_ONLY="${HICLAW_LOCAL_ONLY:-1}"
     elif [ -z "${HICLAW_LOCAL_ONLY+x}" ]; then
-        read -p "$(msg port.local_only.choice) [1]: " _local_choice
+        read -p "$(msg port.local_only.choice): " _local_choice
         _local_choice="${_local_choice:-1}"
         case "${_local_choice}" in
             2|n|N|no|NO) HICLAW_LOCAL_ONLY="0" ;;
@@ -1362,7 +1362,7 @@ install_manager() {
 
     # Data persistence
     log "$(msg data.title)"
-    if [ "${HICLAW_NON_INTERACTIVE}" != "1" ] && [ -z "${HICLAW_DATA_DIR+x}" ]; then
+    if [ "${HICLAW_NON_INTERACTIVE}" != "1" ] && [ "${HICLAW_QUICKSTART}" != "1" ] && [ -z "${HICLAW_DATA_DIR+x}" ]; then
         read -p "$(msg data.volume_prompt): " HICLAW_DATA_DIR
         HICLAW_DATA_DIR="${HICLAW_DATA_DIR:-hiclaw-data}"
         export HICLAW_DATA_DIR
@@ -1372,7 +1372,7 @@ install_manager() {
 
     # Manager workspace directory (skills, memory, state — host-editable)
     log "$(msg workspace.title)"
-    if [ "${HICLAW_NON_INTERACTIVE}" != "1" ] && [ -z "${HICLAW_WORKSPACE_DIR+x}" ]; then
+    if [ "${HICLAW_NON_INTERACTIVE}" != "1" ] && [ "${HICLAW_QUICKSTART}" != "1" ] && [ -z "${HICLAW_WORKSPACE_DIR+x}" ]; then
         read -p "$(msg workspace.dir_prompt "${HOME}/hiclaw-manager"): " HICLAW_WORKSPACE_DIR
         HICLAW_WORKSPACE_DIR="${HICLAW_WORKSPACE_DIR:-${HOME}/hiclaw-manager}"
         export HICLAW_WORKSPACE_DIR
