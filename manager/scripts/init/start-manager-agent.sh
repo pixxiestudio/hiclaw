@@ -278,6 +278,14 @@ case "${MODEL_NAME}" in
 esac
 export MODEL_REASONING=true
 
+# E2EE: convert HICLAW_MATRIX_E2EE to JSON boolean for template substitution
+if [ "${HICLAW_MATRIX_E2EE:-0}" = "1" ] || [ "${HICLAW_MATRIX_E2EE:-}" = "true" ]; then
+    export MATRIX_E2EE_ENABLED=true
+else
+    export MATRIX_E2EE_ENABLED=false
+fi
+log "Matrix E2EE: ${MATRIX_E2EE_ENABLED}"
+
 # Resolve input modalities: only vision-capable models get "image"
 case "${MODEL_NAME}" in
     gpt-5.4|gpt-5.3-codex|gpt-5-mini|gpt-5-nano|claude-opus-4-6|claude-sonnet-4-6|claude-haiku-4-5|qwen3.5-plus|kimi-k2.5)
@@ -296,6 +304,7 @@ if [ -f /root/manager-workspace/openclaw.json ]; then
        --argjson ctx "${MODEL_CONTEXT_WINDOW}" \
        --argjson max "${MODEL_MAX_TOKENS}" \
        --argjson input "${MODEL_INPUT}" \
+       --argjson e2ee "${MATRIX_E2EE_ENABLED}" \
        '.channels.matrix.accessToken = $token | .hooks.token = $key | .models.providers["hiclaw-gateway"].apiKey = $key
         | .models.providers["hiclaw-gateway"].models[0].id = $model
         | .models.providers["hiclaw-gateway"].models[0].name = $model
@@ -304,7 +313,8 @@ if [ -f /root/manager-workspace/openclaw.json ]; then
         | .models.providers["hiclaw-gateway"].models[0].input = $input
         | .agents.defaults.model.primary = ("hiclaw-gateway/" + $model)
         | .commands.restart = true
-        | .gateway.controlUi.dangerouslyDisableDeviceAuth = true' \
+        | .gateway.controlUi.dangerouslyDisableDeviceAuth = true
+        | .channels.matrix.encryption = $e2ee' \
        /root/manager-workspace/openclaw.json > /tmp/openclaw.json.tmp && \
         mv /tmp/openclaw.json.tmp /root/manager-workspace/openclaw.json
     # Verify the token was written correctly

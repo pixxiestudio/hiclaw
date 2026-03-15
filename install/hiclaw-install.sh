@@ -453,6 +453,19 @@ msg() {
         # --- Container management ---
         "install.removing_existing.zh") text="正在移除现有 hiclaw-manager 容器..." ;;
         "install.removing_existing.en") text="Removing existing hiclaw-manager container..." ;;
+        # --- Matrix E2EE ---
+        "matrix_e2ee.title.zh") text="--- Matrix 端到端加密（E2EE）---" ;;
+        "matrix_e2ee.title.en") text="--- Matrix End-to-End Encryption (E2EE) ---" ;;
+        "matrix_e2ee.enable.zh") text="启用 E2EE（Manager 和 Worker 通信加密，注意：E2EE 需要 matrix-sdk-crypto 支持）" ;;
+        "matrix_e2ee.enable.en") text="Enable E2EE (encrypted Manager-Worker communication, note: requires matrix-sdk-crypto)" ;;
+        "matrix_e2ee.disable.zh") text="禁用 E2EE（默认，兼容性更好）" ;;
+        "matrix_e2ee.disable.en") text="Disable E2EE (default, better compatibility)" ;;
+        "matrix_e2ee.choice.zh") text="请选择 [1/2]" ;;
+        "matrix_e2ee.choice.en") text="Enter choice [1/2]" ;;
+        "matrix_e2ee.selected_enabled.zh") text="Matrix E2EE: 已启用" ;;
+        "matrix_e2ee.selected_enabled.en") text="Matrix E2EE: enabled" ;;
+        "matrix_e2ee.selected_disabled.zh") text="Matrix E2EE: 已禁用（默认）" ;;
+        "matrix_e2ee.selected_disabled.en") text="Matrix E2EE: disabled (default)" ;;
         # --- YOLO mode ---
         "install.yolo.zh") text="YOLO 模式已启用（自主决策，无交互提示）" ;;
         "install.yolo.en") text="YOLO mode enabled (autonomous decisions, no interactive prompts)" ;;
@@ -1579,6 +1592,42 @@ install_manager() {
     export HICLAW_DEFAULT_WORKER_RUNTIME
     log "$(msg worker_runtime.selected "${HICLAW_DEFAULT_WORKER_RUNTIME}")"
 
+    # Matrix E2EE (only shown in manual mode; default is disabled)
+    if [ "${HICLAW_NON_INTERACTIVE}" != "1" ] && [ "${HICLAW_QUICKSTART}" != "1" ]; then
+        log ""
+        log "$(msg matrix_e2ee.title)"
+        echo ""
+        echo "  1) $(msg matrix_e2ee.disable)"
+        echo "  2) $(msg matrix_e2ee.enable)"
+        echo ""
+        if [ "${HICLAW_UPGRADE}" = "1" ] && [ -n "${HICLAW_MATRIX_E2EE}" ]; then
+            log "$(msg prompt.upgrade_keep "HICLAW_MATRIX_E2EE" "${HICLAW_MATRIX_E2EE}")"
+            read -e -p "$(msg matrix_e2ee.choice): " _e2ee_choice
+            if [ -n "${_e2ee_choice}" ]; then
+                case "${_e2ee_choice}" in
+                    2) HICLAW_MATRIX_E2EE="1" ;;
+                    *) HICLAW_MATRIX_E2EE="0" ;;
+                esac
+            fi
+            unset _e2ee_choice
+        elif [ -z "${HICLAW_MATRIX_E2EE+x}" ]; then
+            read -e -p "$(msg matrix_e2ee.choice): " _e2ee_choice
+            _e2ee_choice="${_e2ee_choice:-1}"
+            case "${_e2ee_choice}" in
+                2) HICLAW_MATRIX_E2EE="1" ;;
+                *) HICLAW_MATRIX_E2EE="0" ;;
+            esac
+            unset _e2ee_choice
+        fi
+    fi
+    HICLAW_MATRIX_E2EE="${HICLAW_MATRIX_E2EE:-0}"
+    export HICLAW_MATRIX_E2EE
+    if [ "${HICLAW_MATRIX_E2EE}" = "1" ]; then
+        log "$(msg matrix_e2ee.selected_enabled)"
+    else
+        log "$(msg matrix_e2ee.selected_disabled)"
+    fi
+
     # Host directory sharing: for file sharing with agents (defaults to user's home)
     if [ "${HICLAW_NON_INTERACTIVE}" != "1" ] && [ -z "${HICLAW_HOST_SHARE_DIR}" ]; then
         read -e -p "$(msg host_share.prompt "$HOME"): " HICLAW_HOST_SHARE_DIR
@@ -1656,6 +1705,9 @@ HICLAW_COPAW_WORKER_IMAGE=${COPAW_WORKER_IMAGE}
 # Default Worker runtime (openclaw | copaw)
 HICLAW_DEFAULT_WORKER_RUNTIME=${HICLAW_DEFAULT_WORKER_RUNTIME:-openclaw}
 
+# Matrix E2EE (0=disabled, 1=enabled; default: 0)
+HICLAW_MATRIX_E2EE=${HICLAW_MATRIX_E2EE:-0}
+
 # Higress WASM plugin image registry (auto-selected by timezone)
 HIGRESS_ADMIN_WASM_PLUGIN_IMAGE_REGISTRY=${HICLAW_REGISTRY}
 
@@ -1724,6 +1776,9 @@ EOF
         YOLO_ARGS="-e HICLAW_YOLO=1"
         log "$(msg install.yolo)"
     fi
+
+    # E2EE is already in the env file; but also pass explicitly in case env file is not the source
+    # (HICLAW_MATRIX_E2EE is already written to ENV_FILE above via --env-file)
 
     # Pull images (pull the selected runtime's worker image; on upgrade, also pull the other if present locally)
     LOCAL_IMAGE_PREFIX="hiclaw/"
