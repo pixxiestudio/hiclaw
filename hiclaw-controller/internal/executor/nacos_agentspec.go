@@ -17,8 +17,9 @@ import (
 )
 
 const (
-	nacosAuthTypeNone  = "none"
-	nacosAuthTypeNacos = "nacos"
+	nacosAuthTypeNone     = "none"
+	nacosAuthTypeNacos    = "nacos"
+	nacosPreflightTimeout = 5 * time.Second
 )
 
 type nacosAgentSpecClient struct {
@@ -65,7 +66,7 @@ func newNacosAgentSpecClient(ctx context.Context, rawAddr, namespace string) (*n
 	if username != "" && password != "" {
 		authType = nacosAuthTypeNacos
 	} else if username != "" || password != "" {
-		return nil, fmt.Errorf("both username and password are required in nacos URL (use http://user:pass@host:port)")
+		return nil, fmt.Errorf("both username and password are required in nacos URL or env (use nacos://user:pass@host:port or set HICLAW_NACOS_USERNAME/HICLAW_NACOS_PASSWORD)")
 	}
 
 	client := &nacosAgentSpecClient{
@@ -83,6 +84,10 @@ func newNacosAgentSpecClient(ctx context.Context, rawAddr, namespace string) (*n
 		client.namespace = "public"
 	}
 
+	if err := client.preflightConnect(ctx); err != nil {
+		return nil, err
+	}
+
 	if client.authType == nacosAuthTypeNacos {
 		if err := client.login(ctx); err != nil {
 			return nil, fmt.Errorf("login failed: %w", err)
@@ -90,6 +95,20 @@ func newNacosAgentSpecClient(ctx context.Context, rawAddr, namespace string) (*n
 	}
 
 	return client, nil
+}
+
+func (c *nacosAgentSpecClient) preflightConnect(ctx context.Context) error {
+	if _, hasDeadline := ctx.Deadline(); !hasDeadline {
+		var cancel context.CancelFunc
+		ctx, cancel = context.WithTimeout(ctx, nacosPreflightTimeout)
+		defer cancel()
+	}
+
+	conn, err := (&net.Dialer{}).DialContext(ctx, "tcp", c.serverAddr)
+	if err != nil {
+		return fmt.Errorf("failed to connect to %s: %w", c.serverAddr, err)
+	}
+	return conn.Close()
 }
 
 func (c *nacosAgentSpecClient) GetAgentSpec(ctx context.Context, name, outputDir string, version, label string) error {
@@ -323,7 +342,7 @@ func parseNacosHTTPError(statusCode int, body []byte, operation string) error {
 
 	switch statusCode {
 	case http.StatusUnauthorized:
-		return formatNacosHTTPError(operation, statusCode, serverMessage, "authentication required; check username:password in nacos address URL")
+		return formatNacosHTTPError(operation, statusCode, serverMessage, "authentication required; check username:password in the nacos URL or set HICLAW_NACOS_USERNAME/HICLAW_NACOS_PASSWORD")
 	case http.StatusForbidden:
 		return formatNacosHTTPError(operation, statusCode, serverMessage, "access denied; token may be expired or permissions may be missing")
 	case http.StatusNotFound:
@@ -373,6 +392,11 @@ func parseNacosAddr(raw string) (host, port, username, password string, err erro
 	if parsed.User != nil {
 		username = parsed.User.Username()
 		password, _ = parsed.User.Password()
+	}
+
+	if username == "" && password == "" {
+		username = os.Getenv("HICLAW_NACOS_USERNAME")
+		password = os.Getenv("HICLAW_NACOS_PASSWORD")
 	}
 
 	return parsed.Hostname(), port, username, password, nil

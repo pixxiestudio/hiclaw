@@ -191,7 +191,7 @@ func TestOrderForApply(t *testing.T) {
 
 	ordered := orderForApply(resources)
 
-	// Expected order: Team → Worker → Human
+	// Expected order: Team -> Worker -> Human
 	if ordered[0].Kind != "Team" {
 		t.Errorf("expected first to be Team, got %s", ordered[0].Kind)
 	}
@@ -226,6 +226,94 @@ func writeTempYAMLForTest(t *testing.T, content string) string {
 		_ = path
 	})
 	return path
+}
+
+func TestExtractPackageField(t *testing.T) {
+	tests := []struct {
+		name     string
+		yaml     string
+		expected string
+	}{
+		{
+			name: "nacos package",
+			yaml: `apiVersion: hiclaw.io/v1beta1
+kind: Worker
+metadata:
+  name: alice
+spec:
+  package: nacos://admin:pass@host:8848/ns/my-spec/v1
+  model: claude-sonnet-4-6
+`,
+			expected: "nacos://admin:pass@host:8848/ns/my-spec/v1",
+		},
+		{
+			name: "http package",
+			yaml: `apiVersion: hiclaw.io/v1beta1
+kind: Worker
+metadata:
+  name: bob
+spec:
+  package: https://example.com/worker.zip
+  model: qwen3.5-plus
+`,
+			expected: "https://example.com/worker.zip",
+		},
+		{
+			name: "no package field",
+			yaml: `apiVersion: hiclaw.io/v1beta1
+kind: Worker
+metadata:
+  name: charlie
+spec:
+  model: qwen3.5-plus
+`,
+			expected: "",
+		},
+		{
+			name: "no spec section",
+			yaml: `apiVersion: hiclaw.io/v1beta1
+kind: Worker
+metadata:
+  name: dave
+`,
+			expected: "",
+		},
+		{
+			name: "package outside spec is ignored",
+			yaml: `apiVersion: hiclaw.io/v1beta1
+kind: Worker
+metadata:
+  name: eve
+  package: should-be-ignored
+spec:
+  model: test
+`,
+			expected: "",
+		},
+		{
+			name: "package in nested section under spec is still found",
+			yaml: `apiVersion: hiclaw.io/v1beta1
+kind: Worker
+metadata:
+  name: frank
+spec:
+  model: test
+  package: nacos://host:8848/ns/spec
+  skills:
+    - github-operations
+`,
+			expected: "nacos://host:8848/ns/spec",
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got := extractPackageField(tt.yaml)
+			if got != tt.expected {
+				t.Errorf("extractPackageField() = %q, want %q", got, tt.expected)
+			}
+		})
+	}
 }
 
 func TestLoadResources_WorkerWithInlineFields(t *testing.T) {
